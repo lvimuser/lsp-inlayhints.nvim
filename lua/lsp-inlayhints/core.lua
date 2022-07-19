@@ -147,7 +147,11 @@ end
 
 local function handler(err, result, ctx, range)
 	if err then
-		-- vim.notify("inlay_hints: " .. err.message, vim.log.levels.ERROR)
+		if err.message:match("textDocument") then
+			return
+		end
+
+		vim.notify("inlay_hints: " .. err.message, vim.log.levels.ERROR)
 		return
 	end
 
