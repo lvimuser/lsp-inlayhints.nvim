@@ -56,7 +56,17 @@ end
 -- TODO make_given_range_params accepts offset_encoding, we should pass it
 local function get_params(bufnr)
 	local range = get_hint_ranges()
-	return range, vim.lsp.util.make_given_range_params(range.start, range._end, bufnr)
+	local params = vim.lsp.util.make_given_range_params(range.start, range._end, bufnr)
+
+	if params.range["end"].line == -1 then
+		params.range["end"].line = 0
+	end
+
+	if params.range["start"].line == -1 then
+		params.range["start"].line = 0
+	end
+
+	return range, params
 end
 
 local namespace = vim.api.nvim_create_namespace("experimental/inlayHints")
