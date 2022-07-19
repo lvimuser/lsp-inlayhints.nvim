@@ -137,7 +137,7 @@ end
 
 local function handler(err, result, ctx, range)
 	if err then
-		vim.notify("inlay_hints: " .. err.message, vim.log.levels.ERROR)
+		-- vim.notify("inlay_hints: " .. err.message, vim.log.levels.ERROR)
 		return
 	end
 
