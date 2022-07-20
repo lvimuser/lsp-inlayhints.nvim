@@ -107,7 +107,7 @@ local function parseHints(result, ctx)
 		local range = inlayHint.position
 		local line = tonumber(inlayHint.position.line)
 		local label = inlayHint.label
-		local kind = inlayHint.kind
+		local kind = inlayHint.kind or 1
 
 		local current_line = vim.api.nvim_win_get_cursor(0)[1]
 
@@ -190,9 +190,7 @@ local function handler(err, result, ctx, range)
 					else
 						table.insert(param_labels, hint.label.value)
 					end
-				end
-
-				if hint.kind == 1 then
+				else
 					table.insert(type_hints, hint)
 				end
 			end
@@ -223,10 +221,13 @@ local function handler(err, result, ctx, range)
 					else
 						if opts.other_hints_remove_colon then
 							-- remove ': ' or ':'
-							virt_text = virt_text .. label:match("^:?%s?(.*)$")
-						else
-							virt_text = virt_text .. label
+							label = label:match("^:?%s?(.*)$")
 						end
+						if opts.other_hints_remove_colon_end then
+							-- remove ':' after
+							label = label:match("(.*):$")
+						end
+						virt_text = virt_text .. label
 					end
 				end
 
@@ -309,7 +310,7 @@ function M.clear_inlay_hints(start, _end)
 end
 
 -- Sends the request to get the inlay hints and handle them
----@param endpoint string
+---@param endpoint string | nil
 function M.set_inlay_hints(endpoint)
 	local bufnr = vim.api.nvim_get_current_buf()
 	local range, params = get_params(bufnr)

@@ -35,6 +35,8 @@ local config = {
         -- type_hints_prefix = "=> ",
         -- type_hints_prefix = ": ",
         type_hints_prefix = "",
+        other_hints_remove_colon = false,
+        other_hints_remove_colon_end = false,
         max_len_align = false,
         max_len_align_padding = 1,
         right_align = false,
