@@ -1,285 +1,244 @@
--- https://github.com/simrat39/rust-tools.nvim
 local M = {}
 local utils = require "lsp-inlayhints.utils"
 local config = require "lsp-inlayhints.config"
+local adapter = require "lsp-inlayhints.adapter"
+local store = require("lsp-inlayhints.store")._store
 
-function M.setup_autocmd(bufnr, endpoint)
-  local events = "BufEnter,BufWinEnter,TabEnter,BufWritePost,CursorHold,InsertLeave"
-  if config.options.inlay_hints.only_current_line then
-    events = string.format("%s,%s", events, config.options.inlay_hints.only_current_line_autocmd)
+local AUGROUP = "_InlayHints"
+local namespace = vim.api.nvim_create_namespace "textDocument/inlayHints"
+local enabled = nil
+
+-- TODO Set client capability
+vim.lsp.handlers["workspace/inlayHint/refresh"] = function(_, _, ctx)
+  local buffers = vim.lsp.get_buffers_by_client_id(ctx.client_id)
+  for _, bufnr in pairs(buffers) do
+    vim.api.nvim_buf_clear_namespace(bufnr, namespace, 0, -1)
   end
-  local group = vim.api.nvim_create_augroup("InlayHints", {})
-  vim.api.nvim_create_autocmd(vim.split(events, ","), {
+
+  return vim.NIL
+end
+
+local function set_store(bufnr, client)
+  store.b[bufnr].client = { name = client.name, id = client.id }
+  store.b[bufnr].attached = true
+
+  if not store.active_clients[client.name] then
+    M.show(bufnr)
+  end
+  store.active_clients[client.name] = true
+end
+
+--- Setup inlayHints
+---@param bufnr number
+---@param client table A |vim.lsp.client| object
+---@param force boolean Whether to call the server regardless of capability
+function M.on_attach(bufnr, client, force)
+  if not client then
+    vim.notify_once("[LSP Inlayhints] Tried to attach to a nil client.", vim.log.levels.ERROR)
+    return
+  end
+
+  if
+    not (
+      client.server_capabilities.inlayHintProvider
+      or client.server_capabilities.clangdInlayHintsProvider
+      or client.name == "tsserver"
+      or force
+    )
+  then
+    return
+  end
+
+  if config.options.debug_mode then
+    vim.notify_once("[LSP Inlayhints] attached to " .. client.name, vim.log.levels.TRACE)
+  end
+
+  if config.options.debug_mode and store.b[bufnr].attached then
+    local msg = vim.inspect { "already attached", bufnr = bufnr, store = store.b[bufnr] }
+    vim.notify(msg, vim.log.levels.TRACE)
+  end
+
+  set_store(bufnr, client)
+  M.setup_autocmd(bufnr)
+end
+
+function M.setup_autocmd(bufnr)
+  -- WinScrolled covers |scroll-cursor|
+  local events = { "BufEnter", "BufWritePost", "CursorHold", "InsertLeave", "WinScrolled" }
+
+  local group = vim.api.nvim_create_augroup(AUGROUP, { clear = false })
+  local aucmd = vim.api.nvim_create_autocmd(events, {
     group = group,
     buffer = bufnr,
     callback = function()
-      require("lsp-inlayhints").inlay_hints(endpoint)
+      M.show()
     end,
   })
+
+  -- guard against multiple calls
+  if store.b[bufnr].aucmd then
+    pcall(vim.api.nvim_del_autocmd, aucmd)
+  end
+  store.b[bufnr].aucmd = aucmd
+
+  if vim.fn.has "nvim-0.8" > 0 then
+    local group2 = vim.api.nvim_create_augroup(AUGROUP .. "Detach", { clear = false })
+    -- Needs nightly!
+    -- https://github.com/neovim/neovim/commit/2ffafc7aa91fb1d9a71fff12051e40961a7b7f69
+    vim.api.nvim_create_autocmd("LspDetach", {
+      group = group2,
+      buffer = bufnr,
+      once = true,
+      callback = function(args)
+        if not store.b[bufnr] or args.data.client_id ~= store.b[bufnr].client_id then
+          return
+        end
+
+        if config.options.debug_mode then
+          local msg = string.format("[LSP InlayHints] detached from %d", bufnr)
+          vim.notify(msg, vim.log.levels.TRACE)
+        end
+
+        pcall(vim.api.nvim_del_autocmd, aucmd)
+        rawset(store.b, bufnr, nil)
+      end,
+    })
+  end
+end
+
+--- Return visible lines of the buffer (1-based indexing)
+local function get_visible_lines()
+  return { first = vim.fn.line "w0", last = vim.fn.line "w$" }
+end
+
+local function col_of_row(row, offset_encoding)
+  row = row - 1
+
+  local line = vim.api.nvim_buf_get_lines(0, row, row + 1, true)[1]
+  if not line or #line == 0 then
+    return 0
+  end
+
+  return vim.lsp.util._str_utfindex_enc(line, nil, offset_encoding)
 end
 
 --- Return visible range of the buffer
-local function get_visible_range()
-  local _, line1, col1 = unpack(vim.fn.getpos "w0")
-  local _, line2, col2 = unpack(vim.fn.getpos "w$")
-
-  return { start = { line1, col1 }, _end = { line2, col2 } }
-end
-
-local function get_hint_ranges()
-  local line_count = vim.api.nvim_buf_line_count(0)
+-- 'mark-indexed' (1-based lines, 0-based columns)
+local function get_hint_ranges(offset_encoding)
+  local line_count = vim.api.nvim_buf_line_count(0) -- 1-based indexing
 
   if line_count <= 200 then
+    local col = col_of_row(line_count, offset_encoding)
     return {
-      start = { 0, 0 },
-      _end = { line_count, vim.fn.col { line_count, "$" } },
+      start = { 1, 0 },
+      _end = { line_count, col },
     }
   end
 
   local extra = 30
-  local range = get_visible_range()
+  local visible = get_visible_lines()
 
-  local start = math.max(1, range.start[1] - extra)
-  if range.start ~= start then
-    range.start = { start, vim.fn.col { start, "$" } }
-  end
+  local start_line = math.max(1, visible.first - extra)
+  local end_line = math.min(line_count, visible.last + extra)
+  local end_col = col_of_row(end_line, offset_encoding)
 
-  local _end = math.min(line_count, range._end[1] + extra)
-  if range._end ~= _end then
-    range._end = { _end, vim.fn.col { _end, "$" } }
-  end
+  return {
+    start = { start_line, 0 },
+    _end = { end_line, end_col },
+  }
+end
 
-  return range
+local function make_params(start_pos, end_pos, bufnr)
+  return {
+    textDocument = vim.lsp.util.make_text_document_params(bufnr),
+    range = {
+      -- convert to 0-index
+      start = { line = start_pos[1] - 1, character = start_pos[2] },
+      ["end"] = { line = end_pos[1] - 1, character = end_pos[2] },
+    },
+  }
 end
 
 ---@param bufnr number
--- TODO make_given_range_params accepts offset_encoding, we should pass it
-local function get_params(bufnr)
-  local range = get_hint_ranges()
-  local params = vim.lsp.util.make_given_range_params(range.start, range._end, bufnr)
-
-  if params.range["end"].line == -1 then
-    params.range["end"].line = 0
-  end
-
-  if params.range["start"].line == -1 then
-    params.range["start"].line = 0
-  end
-
-  return range, params
-end
-
-local namespace = vim.api.nvim_create_namespace "experimental/inlayHints"
-local enabled = nil
-
-local function adapter(result, ctx)
-  local client = vim.tbl_filter(function(c)
-    return c.id == ctx.client_id
-  end, vim.lsp.get_active_clients())[1]
-
-  -- offspec
-  if client.name == "tsserver" and result.inlayHints then
-    result = vim.tbl_map(function(h)
-      h.label = h.text
-      local kind = h.kind
-      if type(kind) == "string" then
-        h.kind = (kind == "Parameter" and 2) or 1
-      end
-
-      return h
-    end, result.inlayHints)
-  end
-
-  return result
+---@param range table mark-like indexing (1-based lines, 0-based columns)
+---Returns 0-indexed params (per LSP spec)
+local function get_params(range, bufnr)
+  return make_params(range.start, range._end, bufnr)
 end
 
 local function parseHints(result, ctx)
-  local map = {}
-  local only_current_line = config.options.inlay_hints.only_current_line
-
   if type(result) ~= "table" then
     return {}
   end
 
-  result = adapter(result, ctx)
+  result = adapter.adapt(result, ctx)
 
+  local map = {}
   for _, inlayHint in pairs(result) do
-    local range = inlayHint.position
+    if not (inlayHint.position and inlayHint.position.line) and config.options.debug_mode then
+      -- This should not happen.
+      vim.notify_once(
+        "[inlay_hints] Failure to parse hint " .. vim.inspect(inlayHint),
+        vim.log.levels.ERROR
+      )
+    end
+
     local line = tonumber(inlayHint.position.line)
-    local label = inlayHint.label
-    local kind = inlayHint.kind or 1
-
-    local current_line = vim.api.nvim_win_get_cursor(0)[1]
-
-    local function add_line()
-      if not map[line] then
-        ---@diagnostic disable-next-line: need-check-nil
-        map[line] = {}
-      end
-
-      table.insert(map[line], { label = label, kind = kind, range = range })
+    if not map[line] then
+      ---@diagnostic disable-next-line: need-check-nil
+      map[line] = {}
     end
 
-    if only_current_line then
-      if line == current_line - 1 then
-        add_line()
-      end
-    else
-      add_line()
-    end
+    table.insert(map[line], {
+      label = inlayHint.label,
+      kind = inlayHint.kind or 1,
+      range = inlayHint.position,
+    })
   end
+
   return map
 end
 
-local function get_max_len(bufnr, parsed_data)
-  local max_len = -1
-
-  for line, _ in pairs(parsed_data) do
-    local current_line = vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1]
-    if current_line then
-      local current_line_len = string.len(current_line)
-      max_len = math.max(max_len, current_line_len)
-    end
-  end
-
-  return max_len
-end
-
 local function handler(err, result, ctx, range)
-  local opts = config.options.inlay_hints
-  if err then
-    if err.message:match "textDocument" then
-      return
-    end
-
-    if opts.debug_mode then
-      vim.notify("inlay_hints: " .. err.message, vim.log.levels.ERROR)
-    end
+  if err and config.options.debug_mode then
+    local msg = err.message or vim.inspect(err)
+    vim.notify_once("[inlay_hints] LSP error:" .. msg, vim.log.levels.ERROR)
     return
   end
 
   local bufnr = ctx.bufnr
-
   if vim.api.nvim_get_current_buf() ~= bufnr then
     return
   end
 
   local parsed = parseHints(result, ctx)
 
-  -- clean it up at first
-  M.clear_inlay_hints(range.start[1], range._end[1])
+  -- range given is 1-indexed, but clear is 0-indexed (end is exclusive).
+  M.clear(range.start[1] - 1, range._end[1])
 
-  for line, line_hints in pairs(parsed) do
-    local virt_text = ""
-
-    local current_line = vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1]
-    if current_line then
-      local current_line_len = string.len(current_line)
-
-      local param_labels = {}
-      local type_hints = {}
-
-      -- segregate parameter hints and other hints
-      for _, hint in ipairs(line_hints) do
-        if hint.kind == 2 then
-          -- label may be a string or InlayHintLabelPart[]
-          -- https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintLabelPart
-          if type(hint.label) == "table" then
-            local values = vim.tbl_map(function(label_part)
-              return label_part.value
-            end, hint.label)
-            vim.list_extend(param_labels, values)
-          else
-            table.insert(param_labels, hint.label.value)
-          end
-        else
-          table.insert(type_hints, hint)
-        end
-      end
-
-      -- show parameter hints inside brackets with commas and a thin arrow
-      if not vim.tbl_isempty(param_labels) and opts.show_parameter_hints then
-        virt_text = virt_text .. opts.parameter_hints_prefix .. "("
-        for i, label in ipairs(param_labels) do
-          virt_text = virt_text .. label:sub(1, -2)
-          if i ~= #param_labels then
-            virt_text = virt_text .. ", "
-          end
-        end
-        virt_text = virt_text .. ") "
-      end
-
-      -- show other hints with commas and a prefix
-      if not vim.tbl_isempty(type_hints) then
-        virt_text = virt_text .. opts.type_hints_prefix
-        local process_virtual_text = function(hint, value)
-          local label = value
-          if opts.show_variable_name then
-            local char_start = hint.range.start.character
-            local char_end = hint.range["end"].character
-            local variable_name = string.sub(current_line, char_start + 1, char_end)
-
-            virt_text = virt_text .. variable_name .. ": " .. label
-          else
-            if opts.other_hints_remove_colon then
-              -- remove ': ' or ':'
-              label = label:match "^:?%s?(.*)$"
-            end
-            if opts.other_hints_remove_colon_end then
-              -- remove ':' after
-              label = label:match "(.*):$"
-            end
-            virt_text = virt_text .. label
-          end
-        end
-
-        for i, hint in ipairs(type_hints) do
-          -- label may be a string or InlayHintLabelPart[]
-          -- https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintLabelPart
-          if type(hint.label) == "table" then
-            for j, label_part in ipairs(hint.label) do
-              process_virtual_text(hint, label_part.value)
-              if j ~= #hint.label then
-                virt_text = virt_text .. ", "
-              end
-            end
-          else
-            process_virtual_text(hint, hint.label)
-          end
-
-          if i ~= #type_hints and not virt_text:match ",%s$" then
-            virt_text = virt_text .. ", "
-          end
-        end
-      end
-
-      if config.options.inlay_hints.right_align then
-        virt_text = virt_text .. string.rep(" ", config.options.inlay_hints.right_align_padding)
-      end
-
-      if config.options.inlay_hints.max_len_align then
-        local max_len = get_max_len(bufnr, parsed)
-        virt_text = string.rep(
-          " ",
-          max_len - current_line_len + config.options.inlay_hints.max_len_align_padding
-        ) .. virt_text
-      end
-
-      -- set the virtual text if it is not empty
-      if virt_text ~= "" then
-        vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
-          virt_text_pos = config.options.inlay_hints.right_align and "right_align" or "eol",
-          virt_text = {
-            { virt_text, config.options.inlay_hints.highlight },
-          },
-          hl_mode = "combine",
-        })
-      end
-
-      -- update state
-      enabled = true
-    end
+  local helper = require "lsp-inlayhints.handler_helper"
+  if helper.render_hints(bufnr, parsed, namespace) then
+    enabled = true
   end
+end
+
+function M.toggle()
+  if enabled then
+    M.clear()
+  else
+    M.show()
+  end
+
+  enabled = not enabled
+end
+
+--- Clear all hints in the current buffer
+--- Lines are 0-indexed.
+---@param line_start integer | nil, defaults to 0 (start of buffer)
+---@param line_end integer | nil, defaults to -1 (end of buffer)
+function M.clear(line_start, line_end)
+  -- clear namespace which clears the virtual text as well
+  vim.api.nvim_buf_clear_namespace(0, namespace, line_start or 0, line_end or -1)
 end
 
 local function handler_with_range(range)
@@ -288,40 +247,33 @@ local function handler_with_range(range)
   end
 end
 
-function M.toggle_inlay_hints()
-  if enabled then
-    M.clear_inlay_hints()
-  else
-    M.set_inlay_hints()
+-- Sends the request to get the inlay hints and show them
+---@param bufnr number | nil
+function M.show(bufnr)
+  if enabled == false then
+    return
   end
-  enabled = not enabled
+
+  if bufnr == nil or bufnr == 0 then
+    bufnr = vim.api.nvim_get_current_buf()
+  end
+
+  if not store.b[bufnr].client then
+    return
+  end
+
+  local client = vim.lsp.get_client_by_id(store.b[bufnr].client.id)
+  local range = get_hint_ranges(client.offset_encoding)
+  local params = get_params(range, bufnr)
+  if not params then
+    return
+  end
+
+  local method = adapter.method(bufnr)
+  utils.request(client, bufnr, method, params, handler_with_range(range))
 end
 
--- function M.disable_inlay_hints()
---   M.clear_inlay_hints()
-
---   -- clear then delete
---   local group = vim.api.nvim_create_augroup("InlayHints", {})
---   vim.api.nvim_del_augroup_by_id(group)
---   vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
--- end
-
-function M.clear_inlay_hints(start, _end)
-  -- clear namespace which clears the virtual text as well
-  vim.api.nvim_buf_clear_namespace(0, namespace, start or 0, _end or -1)
-end
-
--- Sends the request to get the inlay hints and handle them
----@param endpoint string | nil
-function M.set_inlay_hints(endpoint)
-  local bufnr = vim.api.nvim_get_current_buf()
-  local range, params = get_params(bufnr)
-
-  endpoint = endpoint or "textDocument/inlayHint"
-  utils.request(bufnr, endpoint, params, handler_with_range(range))
-end
-
-local debounce_ms = 200
-_, M.set_inlay_hints = utils.debounce(M.set_inlay_hints, debounce_ms)
+local debounce_ms = 250
+_, M.show = utils.debounce(M.show, debounce_ms)
 
 return M

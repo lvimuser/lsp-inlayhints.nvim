@@ -8,7 +8,11 @@ end
 
 local inlay_hints = require "lsp-inlayhints.core"
 
-M.inlay_hints = inlay_hints.set_inlay_hints
-M.setup_autocmd = inlay_hints.setup_autocmd
+M.on_attach = inlay_hints.on_attach
+M.show = inlay_hints.show
+M.toggle = inlay_hints.toggle
+
+-- Clear all hints in the current buffer
+M.reset = inlay_hints.clear
 
 return M
