@@ -146,16 +146,18 @@ local function get_max_len(bufnr, parsed_data)
 end
 
 local function handler(err, result, ctx, range)
+	local opts = config.options.tools.inlay_hints
 	if err then
 		if err.message:match("textDocument") then
 			return
 		end
 
-		vim.notify("inlay_hints: " .. err.message, vim.log.levels.ERROR)
+		if opts.debug_mode then
+			vim.notify("inlay_hints: " .. err.message, vim.log.levels.ERROR)
+		end
 		return
 	end
 
-	local opts = config.options.tools.inlay_hints
 	local bufnr = ctx.bufnr
 
 	if vim.api.nvim_get_current_buf() ~= bufnr then
