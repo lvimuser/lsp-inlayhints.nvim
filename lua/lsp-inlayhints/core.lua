@@ -5,9 +5,8 @@ local config = require "lsp-inlayhints.config"
 
 function M.setup_autocmd(bufnr, endpoint)
   local events = "BufEnter,BufWinEnter,TabEnter,BufWritePost,CursorHold,InsertLeave"
-  if config.options.tools.inlay_hints.only_current_line then
-    events =
-      string.format("%s,%s", events, config.options.tools.inlay_hints.only_current_line_autocmd)
+  if config.options.inlay_hints.only_current_line then
+    events = string.format("%s,%s", events, config.options.inlay_hints.only_current_line_autocmd)
   end
   local group = vim.api.nvim_create_augroup("InlayHints", {})
   vim.api.nvim_create_autocmd(vim.split(events, ","), {
@@ -96,7 +95,7 @@ end
 
 local function parseHints(result, ctx)
   local map = {}
-  local only_current_line = config.options.tools.inlay_hints.only_current_line
+  local only_current_line = config.options.inlay_hints.only_current_line
 
   if type(result) ~= "table" then
     return {}
@@ -147,7 +146,7 @@ local function get_max_len(bufnr, parsed_data)
 end
 
 local function handler(err, result, ctx, range)
-  local opts = config.options.tools.inlay_hints
+  local opts = config.options.inlay_hints
   if err then
     if err.message:match "textDocument" then
       return
@@ -254,25 +253,24 @@ local function handler(err, result, ctx, range)
         end
       end
 
-      if config.options.tools.inlay_hints.right_align then
-        virt_text = virt_text
-          .. string.rep(" ", config.options.tools.inlay_hints.right_align_padding)
+      if config.options.inlay_hints.right_align then
+        virt_text = virt_text .. string.rep(" ", config.options.inlay_hints.right_align_padding)
       end
 
-      if config.options.tools.inlay_hints.max_len_align then
+      if config.options.inlay_hints.max_len_align then
         local max_len = get_max_len(bufnr, parsed)
         virt_text = string.rep(
           " ",
-          max_len - current_line_len + config.options.tools.inlay_hints.max_len_align_padding
+          max_len - current_line_len + config.options.inlay_hints.max_len_align_padding
         ) .. virt_text
       end
 
       -- set the virtual text if it is not empty
       if virt_text ~= "" then
         vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
-          virt_text_pos = config.options.tools.inlay_hints.right_align and "right_align" or "eol",
+          virt_text_pos = config.options.inlay_hints.right_align and "right_align" or "eol",
           virt_text = {
-            { virt_text, config.options.tools.inlay_hints.highlight },
+            { virt_text, config.options.inlay_hints.highlight },
           },
           hl_mode = "combine",
         })
