@@ -30,7 +30,7 @@ function M.on_attach(bufnr, client, force)
     return
   end
 
-  local debounce_ms = 300
+  local debounce_ms = 250
   local timer, fn = utils.debounce(function()
     M.show(bufnr)
   end, debounce_ms)
@@ -60,7 +60,11 @@ function M.setup_autocmd(bufnr)
     callback = function()
       if not store.b[bufnr].show then
         if config.options.debug_mode then
-          local msg = string.format("[inlay_hints] 'show' nil for buffer %d. Store:\n%s",  bufnr, vim.inspect(store.b))
+          local msg = string.format(
+            "[inlay_hints] 'show' nil for buffer %d. Store:\n%s",
+            bufnr,
+            vim.inspect(store.b)
+          )
           vim.notify_once(msg, vim.log.levels.ERROR)
         end
 

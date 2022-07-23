@@ -5,7 +5,7 @@ Originally based on simrat39's [rust-tools.nvim](https://github.com/simrat39/rus
 ## Installation
 
 Add `lvimuser/lsp-inlayhints.nvim` using your favorite plugin manager and call
-`require("lsp-inlayhints").setup()`. See [Configuration](###-configuration).
+`require("lsp-inlayhints").setup()`. See [Configuration](#configuration).
 
 You can lazy load it on `module` or `LspAttach` event if you're calling it
 **after** nvim has attached the server.
