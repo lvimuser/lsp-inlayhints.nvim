@@ -53,7 +53,7 @@ local get_param_vt = function(labels)
       label = label:match "^:?%s?(.*)$" or label
     end
     if opts.parameter_hints.remove_colon_end then
-      label = label:match "(.*):$" or label
+      label = label:match "(.*):%s?$" or label
     end
 
     virt_text = virt_text .. label

@@ -116,7 +116,7 @@ Should work for all languages that implement the spec. Tested on `rust-analyzer 
 
 ### Rust
 
-If you're using `rust-tools.nvim`, disable its inlay hints by setting `autoSetHints = false`.
+If you're using `rust-tools.nvim`, set `autoSetHints = false`.
 
 ### Typescript
 
@@ -126,7 +126,9 @@ See <https://github.com/typescript-language-server/typescript-language-server#wo
 
 ### Clangd
 
-Builtin support. See <https://clangd.llvm.org/extensions#inlay-hints>
+Builtin support. See <https://clangd.llvm.org/extensions#inlay-hints> and
+<https://clangd.llvm.org/config#inlayhints>.
+If using `p00f/clangd_extensions.nvim`, set `autoSetHints = false`.
 
 ### Golang
 
