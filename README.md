@@ -18,7 +18,7 @@ require("lsp-inlayhints").on_attach(bufnr, client)
 
 ### LspAttach
 
-For nvim0.8, you can use the `LspAttach` event:
+For nightly, you can use the `LspAttach` event:
 
 ```lua
 local group = vim.api.nvim_create_augroup("LspAttach_inlayhints", {})
@@ -50,14 +50,16 @@ local default_config = {
       show = true,
       prefix = "<- ",
       separator = ", ",
+      remove_colon_start = false,
+      remove_colon_end = true,
     },
     type_hints = {
       -- type and other hints
       show = true,
       prefix = "",
       separator = ", ",
-      remove_colon_end = false,
       remove_colon_start = false,
+      remove_colon_end = false,
     },
     -- separator between types and parameter hints. Note that type hints are
     -- shown before parameter
@@ -92,6 +94,14 @@ local default_config = {
 
 Clear inlay hints and disable the plugin (globally).
 
+### toggle
+
+Enable/disable the plugin globally.
+
+```lua
+require('lsp-inlayhints').toggle()
+```
+
 ### reset
 
 Clears all inlay hints in the current buffer. Use this if it glitches out.
@@ -102,7 +112,7 @@ require('lsp-inlayhints').reset()
 
 ## Languages
 
-Should work for all languages that implement the spec. Tested on `rust-analyzer (via rust-tools.nvim)`, `fsautocomplete (via ionide.vim)`, `sumneko_lua`.
+Should work for all languages that implement the spec. Tested on `rust-analyzer (via rust-tools.nvim)`, `fsautocomplete (via ionide.vim)`, `sumneko_lua`, `gopls`.
 
 ### Rust
 
@@ -117,6 +127,25 @@ See <https://github.com/typescript-language-server/typescript-language-server#wo
 ### Clangd
 
 Builtin support. See <https://clangd.llvm.org/extensions#inlay-hints>
+
+### Golang
+
+Implements the spec. Configuration: <https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md>. Example:
+
+```json
+"gopls": {
+  "hints": {
+    "assignVariableTypes": true,
+    "compositeLiteralFields": true,
+    "constantValues": true,
+    "functionTypeParameters": true,
+    "parameterNames": true,
+    "rangeVariableTypes": true
+  }
+}
+```
+
+If you're using `ray-x/go.nvim`, disable its inlay hints by setting `lsp_inlay_hints = { enable = false }`.
 
 ### Other
 

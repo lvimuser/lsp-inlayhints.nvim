@@ -24,14 +24,16 @@ local default_config = {
       show = true,
       prefix = "<- ",
       separator = ", ",
+      remove_colon_start = false,
+      remove_colon_end = true,
     },
     -- type and other hints
     type_hints = {
       show = true,
       prefix = "",
       separator = ", ",
-      remove_colon_end = false,
       remove_colon_start = false,
+      remove_colon_end = false,
       -- show_variable_name = false, -- TODO
     },
     -- separator between types and parameter hints. Note that type hints are shown before parameter

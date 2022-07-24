@@ -19,13 +19,11 @@ local get_type_vt = function(current_line, type_labels, line_hints)
     -- else
     if opts.type_hints.remove_colon_start then
       -- remove ': ' or ':'
-      label = label:match "^:?%s?(.*)$"
+      label = label:match "^:?%s?(.*)$" or label
     end
     if opts.type_hints.remove_colon_end then
-      -- remove ':' after
-      label = label:match "(.*):$"
+      label = label:match "(.*):$" or label
     end
-    -- end
     virt_text = virt_text .. label
   end
 
@@ -50,7 +48,15 @@ local get_param_vt = function(labels)
   local virt_text = (opts.parameter_hints.prefix or "") .. "("
 
   for i, label in ipairs(labels) do
-    virt_text = virt_text .. label:sub(1, -2)
+    if opts.parameter_hints.remove_colon_start then
+      -- remove ': ' or ':'
+      label = label:match "^:?%s?(.*)$" or label
+    end
+    if opts.parameter_hints.remove_colon_end then
+      label = label:match "(.*):$" or label
+    end
+
+    virt_text = virt_text .. label
     if i ~= #labels then
       virt_text = virt_text .. opts.parameter_hints.separator
     end

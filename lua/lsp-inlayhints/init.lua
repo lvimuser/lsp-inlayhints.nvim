@@ -21,7 +21,9 @@ local inlay_hints = require "lsp-inlayhints.core"
 -- M.enable = inlay_hints.enable
 
 -- Clear all hints in the current buffer
-M.reset = inlay_hints.clear_inlay_hints
+M.reset = inlay_hints.clear
+
+M.toggle = inlay_hints.toggle
 
 -- M.hide = inlay_hints.hide
 M.show = inlay_hints.show
