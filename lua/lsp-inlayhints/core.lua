@@ -175,14 +175,6 @@ local function parseHints(result, ctx)
 
   local map = {}
   for _, inlayHint in pairs(result) do
-    if not (inlayHint.position and inlayHint.position.line) and config.options.debug_mode then
-      -- This should not happen.
-      vim.notify_once(
-        "[inlay_hints] Failure to parse hint " .. vim.inspect(inlayHint),
-        vim.log.levels.ERROR
-      )
-    end
-
     local line = tonumber(inlayHint.position.line)
     if not map[line] then
       ---@diagnostic disable-next-line: need-check-nil
@@ -192,8 +184,12 @@ local function parseHints(result, ctx)
     table.insert(map[line], {
       label = inlayHint.label,
       kind = inlayHint.kind or 1,
-      range = inlayHint.position,
+      position = inlayHint.position,
     })
+
+    table.sort(map[line], function(a, b)
+      return a.position.character < b.position.character
+    end)
   end
 
   return map
