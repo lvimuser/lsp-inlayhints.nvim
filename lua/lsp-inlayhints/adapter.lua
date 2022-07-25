@@ -86,7 +86,7 @@ function M.adapt(result, ctx)
 
   result = result_adapter(client.name, result)
 
-  return vim.tbl_map(get_or_set_hint_adapter(client.name), result)
+  return vim.tbl_map(get_or_set_hint_adapter(client.name), result) or {}
 end
 
 return M
