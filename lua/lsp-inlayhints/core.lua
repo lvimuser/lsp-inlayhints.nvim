@@ -20,10 +20,8 @@ vim.lsp.handlers["workspace/inlayHint/refresh"] = function(_, _, ctx)
 end
 
 local function set_store(bufnr, client)
-  store.b[bufnr] = {
-    client = { name = client.name, id = client.id },
-    attached = true,
-  }
+  store.b[bufnr].client = { name = client.name, id = client.id }
+  store.b[bufnr].attached = true
 
   if not store.active_clients[client.name] then
     M.show(bufnr)
@@ -61,10 +59,6 @@ function M.on_attach(bufnr, client, force)
     vim.notify(msg, vim.log.levels.TRACE)
   end
 
-  if not vim.tbl_isempty(store.b[bufnr]) then
-    return
-  end
-
   set_store(bufnr, client)
   M.setup_autocmd(bufnr)
 end
@@ -82,6 +76,7 @@ function M.setup_autocmd(bufnr)
     end,
   })
 
+  -- guard against multiple calls
   if store.b[bufnr].aucmd then
     pcall(vim.api.nvim_del_autocmd, aucmd)
   end
