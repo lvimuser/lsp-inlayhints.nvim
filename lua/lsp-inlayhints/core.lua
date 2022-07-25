@@ -52,7 +52,9 @@ function M.on_attach(bufnr, client, force)
     return
   end
 
-  vim.notify_once("[LSP Inlayhints] attached to " .. client.name, vim.log.levels.TRACE)
+  if config.options.debug_mode then
+    vim.notify_once("[LSP Inlayhints] attached to " .. client.name, vim.log.levels.TRACE)
+  end
 
   if config.options.debug_mode and store.b[bufnr].attached then
     local msg = vim.inspect { "already attached", bufnr = bufnr, store = store.b[bufnr] }
