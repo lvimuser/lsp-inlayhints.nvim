@@ -53,7 +53,7 @@ local default_config = {
 }
 
 config.load = function(user_config)
-  local has_hl, _ = pcall(vim.api.nvim_get_hl_by_name, "LspInlayHint")
+  local has_hl, _ = pcall(vim.api.nvim_get_hl_by_name, "LspInlayHint", {})
   if not has_hl then
     setInlayHintHL()
   end
