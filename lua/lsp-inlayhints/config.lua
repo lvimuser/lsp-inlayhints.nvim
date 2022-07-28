@@ -1,12 +1,12 @@
 local function setInlayHintHL()
   local hl = vim.api.nvim_get_hl_by_name("Comment", true)
-  local foreground = string.format("#%x", hl["foreground"] or 0)
+  local foreground = string.format("#%06x", hl["foreground"] or 0)
   if #foreground < 3 then
     foreground = ""
   end
 
   hl = vim.api.nvim_get_hl_by_name("CursorLine", true)
-  local background = string.format("#%x", hl["background"] or 0)
+  local background = string.format("#%06x", hl["background"] or 0)
   if #foreground < 3 then
     background = ""
   end
