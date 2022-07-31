@@ -5,20 +5,31 @@ local adapter = require "lsp-inlayhints.adapter"
 local store = require("lsp-inlayhints.store")._store
 
 local AUGROUP = "_InlayHints"
-local namespace = vim.api.nvim_create_namespace "textDocument/inlayHints"
+local ns = vim.api.nvim_create_namespace "textDocument/inlayHints"
 local enabled = nil
 
 -- TODO Set client capability
 vim.lsp.handlers["workspace/inlayHint/refresh"] = function(_, _, ctx)
   local buffers = vim.lsp.get_buffers_by_client_id(ctx.client_id)
   for _, bufnr in pairs(buffers) do
-    vim.api.nvim_buf_clear_namespace(bufnr, namespace, 0, -1)
+    vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
   end
 
   return vim.NIL
 end
 
 local function set_store(bufnr, client)
+  if not store.b[bufnr].attached then
+    vim.api.nvim_buf_attach(bufnr, false, {
+      on_detach = function()
+        vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+      end,
+      on_lines = function(_, _, _, first_lnum, last_lnum)
+        vim.api.nvim_buf_clear_namespace(bufnr, ns, first_lnum, last_lnum)
+      end,
+    })
+  end
+
   store.b[bufnr].client = { name = client.name, id = client.id }
   store.b[bufnr].attached = true
 
@@ -213,7 +224,7 @@ local function handler(err, result, ctx, range)
   M.clear(range.start[1] - 1, range._end[1])
 
   local helper = require "lsp-inlayhints.handler_helper"
-  if helper.render_hints(bufnr, parsed, namespace) then
+  if helper.render_hints(bufnr, parsed, ns) then
     enabled = true
   end
 end
@@ -234,7 +245,7 @@ end
 ---@param line_end integer | nil, defaults to -1 (end of buffer)
 function M.clear(line_start, line_end)
   -- clear namespace which clears the virtual text as well
-  vim.api.nvim_buf_clear_namespace(0, namespace, line_start or 0, line_end or -1)
+  vim.api.nvim_buf_clear_namespace(0, ns, line_start or 0, line_end or -1)
 end
 
 local function handler_with_range(range)
