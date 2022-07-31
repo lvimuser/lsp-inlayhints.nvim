@@ -221,7 +221,7 @@ local function handler(err, result, ctx, range)
   local parsed = parseHints(result, ctx)
 
   -- range given is 1-indexed, but clear is 0-indexed (end is exclusive).
-  M.clear(range.start[1] - 1, range._end[1])
+  M.clear(bufnr, range.start[1] - 1, range._end[1])
 
   local helper = require "lsp-inlayhints.handler_helper"
   if helper.render_hints(bufnr, parsed, ns) then
@@ -239,13 +239,18 @@ function M.toggle()
   enabled = not enabled
 end
 
---- Clear all hints in the current buffer
+--- Clear all hints in the specified buffer
 --- Lines are 0-indexed.
+---@param bufnr integer | nil, defaults to current buffer
 ---@param line_start integer | nil, defaults to 0 (start of buffer)
 ---@param line_end integer | nil, defaults to -1 (end of buffer)
-function M.clear(line_start, line_end)
+function M.clear(bufnr, line_start, line_end)
+  if bufnr == nil or bufnr == 0 then
+    bufnr = vim.api.nvim_get_current_buf()
+  end
+
   -- clear namespace which clears the virtual text as well
-  vim.api.nvim_buf_clear_namespace(0, ns, line_start or 0, line_end or -1)
+  vim.api.nvim_buf_clear_namespace(bufnr, ns, line_start or 0, line_end or -1)
 end
 
 local function handler_with_range(range)
