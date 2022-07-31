@@ -64,11 +64,6 @@ function M.on_attach(bufnr, client, force)
     vim.notify_once("[LSP Inlayhints] attached to " .. client.name, vim.log.levels.TRACE)
   end
 
-  if config.options.debug_mode and store.b[bufnr].attached then
-    local msg = vim.inspect { "already attached", bufnr = bufnr, store = store.b[bufnr] }
-    vim.notify(msg, vim.log.levels.TRACE)
-  end
-
   set_store(bufnr, client)
   M.setup_autocmd(bufnr)
 end
@@ -275,6 +270,10 @@ function M.show(bufnr)
   end
 
   local client = vim.lsp.get_client_by_id(store.b[bufnr].client.id)
+  if not client then
+    return
+  end
+
   local range = get_hint_ranges(client.offset_encoding)
   local params = get_params(range, bufnr)
   if not params then

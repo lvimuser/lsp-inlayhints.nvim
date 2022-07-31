@@ -6,7 +6,7 @@ M._store = {
   b = setmetatable({}, {
     __index = function(t, bufnr)
       t[bufnr] = {}
-      return t[bufnr]
+      return rawget(t, bufnr)
     end,
   }),
 }
