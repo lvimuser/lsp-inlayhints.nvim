@@ -105,6 +105,39 @@ If you're using `rust-tools.nvim`, set `autoSetHints = false`.
 While `tsserver` doesn't (strictly) implement the spec, there's a built-in workaround for it.
 
 See <https://github.com/typescript-language-server/typescript-language-server#workspacedidchangeconfiguration> and <https://github.com/typescript-language-server/typescript-language-server/blob/master/README.md#inlay-hints-typescriptinlayhints-experimental> for the options.
+        
+<details><summary>Example configuration to enable inlay hints in TypeScript and JavaScript, using lspconfig:</summary>
+
+```lua
+lspconfig.tsserver.setup({
+  settings = {
+    typescript = {
+      inlayHints = {
+        includeInlayParameterNameHints = 'all',
+        includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+        includeInlayFunctionParameterTypeHints = true,
+        includeInlayVariableTypeHints = true,
+        includeInlayPropertyDeclarationTypeHints = true,
+        includeInlayFunctionLikeReturnTypeHints = true,
+        includeInlayEnumMemberValueHints = true,
+      }
+    },
+    javascript = {
+      inlayHints = {
+        includeInlayParameterNameHints = 'all',
+        includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+        includeInlayFunctionParameterTypeHints = true,
+        includeInlayVariableTypeHints = true,
+        includeInlayPropertyDeclarationTypeHints = true,
+        includeInlayFunctionLikeReturnTypeHints = true,
+        includeInlayEnumMemberValueHints = true,
+      }
+    }
+  }
+})
+```
+
+</details>
 
 ### Clangd
 
