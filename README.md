@@ -21,18 +21,14 @@ require("lsp-inlayhints").on_attach(bufnr, client)
 For >0.8, you can use the `LspAttach` event:
 
 ```lua
-vim.api.nvim_create_augroup("LspAttach_inlayhints", {})
-vim.api.nvim_create_autocmd("LspAttach", {
-  group = "LspAttach_inlayhints",
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('LspAttach_inlayhints', {}),
   callback = function(args)
-    if not (args.data and args.data.client_id) then
-      return
+    if (args.data and args.data.client_id) then
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      require 'lsp-inlayhints'.on_attach(args.buf, client)
     end
-
-    local bufnr = vim.lsp.get_client_by_id(args.buf)
-    local client = vim.lsp.get_client_by_id(args.data.client_id)
-    require("lsp-inlayhints").on_attach(bufnr, client)
-  end,
+  end
 })
 ```
 
