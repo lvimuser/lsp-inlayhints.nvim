@@ -104,8 +104,8 @@ If you're using `rust-tools.nvim`, set `autoSetHints = false`.
 
 While `tsserver` doesn't (strictly) implement the spec, there's a built-in workaround for it.
 
-See <https://github.com/typescript-language-server/typescript-language-server#workspacedidchangeconfiguration> and <https://github.com/typescript-language-server/typescript-language-server/blob/master/README.md#inlay-hints-typescriptinlayhints-experimental> for the options.
-        
+See <https://github.com/typescript-language-server/typescript-language-server#workspacedidchangeconfiguration> for the options.
+
 <details><summary>Example configuration to enable inlay hints in TypeScript and JavaScript, using lspconfig:</summary>
 
 ```lua
