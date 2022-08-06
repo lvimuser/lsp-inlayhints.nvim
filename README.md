@@ -167,7 +167,7 @@ If you're using `ray-x/go.nvim`, set `lsp_inlay_hints = { enable = false }`.
 ### Other
 
 If a server implements inlay hints on a different endpoint/method (not
-`textDocument/inlayHints`), raise an issue with the request/response details to
+`textDocument/inlayHint`), raise an issue with the request/response details to
 check the possibility of a workaround.
 
 ## Available commands:
