@@ -6,7 +6,7 @@ local store = require("lsp-inlayhints.store")._store
 
 local AUGROUP = "_InlayHints"
 local ns = vim.api.nvim_create_namespace "textDocument/inlayHints"
-local enabled = nil
+local enabled = true
 
 -- TODO Set client capability
 vim.lsp.handlers["workspace/inlayHint/refresh"] = function(_, _, ctx)
@@ -69,6 +69,11 @@ function M.on_attach(bufnr, client, force)
 end
 
 function M.setup_autocmd(bufnr)
+  -- guard against multiple calls
+  if store.b[bufnr].aucmd then
+    return
+  end
+
   -- WinScrolled covers |scroll-cursor|
   local events = { "BufEnter", "BufWritePost", "CursorHold", "InsertLeave", "WinScrolled" }
 
@@ -81,10 +86,6 @@ function M.setup_autocmd(bufnr)
     end,
   })
 
-  -- guard against multiple calls
-  if store.b[bufnr].aucmd then
-    pcall(vim.api.nvim_del_autocmd, aucmd)
-  end
   store.b[bufnr].aucmd = aucmd
 
   if vim.fn.has "nvim-0.8" > 0 then
@@ -219,9 +220,7 @@ local function handler(err, result, ctx, range)
   M.clear(bufnr, range.start[1] - 1, range._end[1])
 
   local helper = require "lsp-inlayhints.handler_helper"
-  if helper.render_hints(bufnr, parsed, ns) then
-    enabled = true
-  end
+  helper.render_hints(bufnr, parsed, ns)
 end
 
 function M.toggle()
@@ -257,7 +256,7 @@ end
 -- Sends the request to get the inlay hints and show them
 ---@param bufnr number | nil
 function M.show(bufnr)
-  if enabled == false then
+  if not enabled then
     return
   end
 
@@ -281,7 +280,7 @@ function M.show(bufnr)
   end
 
   local method = adapter.method(bufnr)
-  utils.request(client, bufnr, method, params, handler_with_range(range))
+  client.request(method, params, handler_with_range(range), bufnr)
 end
 
 local debounce_ms = 250

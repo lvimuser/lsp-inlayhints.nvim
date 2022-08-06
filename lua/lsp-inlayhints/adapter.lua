@@ -1,4 +1,5 @@
 local store = require("lsp-inlayhints.store")._store
+local utils = require "lsp-inlayhints.utils"
 
 local M = {}
 
@@ -62,15 +63,6 @@ local result_adapter = function(client, result)
   return result
 end
 
-local hint_adapters = {}
-local get_or_set_hint_adapter = function(client)
-  if not hint_adapters[client] then
-    hint_adapters[client] = hint_adapter(client)
-  end
-
-  return hint_adapters[client]
-end
-
 M.method = function(bufnr)
   local client = store.b[bufnr].client.name
   local c = M.servers_config
@@ -84,9 +76,8 @@ function M.adapt(result, ctx)
     return {}
   end
 
-  result = result_adapter(client.name, result)
-
-  return vim.tbl_map(get_or_set_hint_adapter(client.name), result) or {}
+  result = result_adapter(client.name, result) or {}
+  return utils.tbl_map(hint_adapter(client.name), result)
 end
 
 return M
