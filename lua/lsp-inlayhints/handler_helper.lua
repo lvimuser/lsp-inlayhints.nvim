@@ -126,10 +126,6 @@ local render_hints = function(bufnr, parsed, namespace)
 
     virt_text = virt_text .. param_vt
 
-    if config.options.inlay_hints.right_align then
-      virt_text = virt_text .. string.rep(" ", config.options.inlay_hints.right_align_padding)
-    end
-
     if config.options.inlay_hints.max_len_align then
       virt_text = string.rep(
         " ",
@@ -141,10 +137,7 @@ local render_hints = function(bufnr, parsed, namespace)
     -- on show, call get_vt before clearing
     if virt_text ~= "" then
       vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
-        virt_text_pos = config.options.inlay_hints.right_align and "right_align" or "eol",
-        virt_text = {
-          { virt_text, config.options.inlay_hints.highlight },
-        },
+        virt_text = { { virt_text, config.options.inlay_hints.highlight } },
         hl_mode = "combine",
       })
 

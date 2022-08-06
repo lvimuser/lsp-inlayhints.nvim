@@ -42,10 +42,6 @@ local default_config = {
     max_len_align = false,
     -- padding from the left if max_len_align is true
     max_len_align_padding = 1,
-    -- whether to align to the extreme right or not
-    right_align = false,
-    -- padding from the right if right_align is true
-    right_align_padding = 7,
     -- highlight group
     highlight = "LspInlayHint",
   },
