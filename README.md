@@ -160,6 +160,15 @@ Implements the spec. Configuration: <https://github.com/golang/tools/blob/master
 
 If you're using `ray-x/go.nvim`, set `lsp_inlay_hints = { enable = false }`.
 
+### Java (jdtls)
+
+Available settings: https://github.com/redhat-developer/vscode-java/blob/master/package.json#L868-L892.
+
+- Server doesn't set `inlayHintProvider` [capability](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#serverCapabilities).
+- Server doesn't specify [InlayHintKind](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintKind) and its options refer only to parameters.
+
+Builtin workaround: attach regardless and treat unspecified hints as `Parameter`.
+
 ### Other
 
 If a server implements inlay hints on a different endpoint/method (not

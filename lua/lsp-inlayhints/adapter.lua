@@ -21,6 +21,14 @@ M.servers_config = {
       end
     end,
   },
+  jdtls = {
+    hint_adapter = function(h)
+      -- server doesn't specify 'InlayHintKind' and its settings pertain only to parameters.
+      if not h.kind then
+        h.kind = 2
+      end
+    end,
+  },
 }
 
 local generic_hint_adapter = function(hint)
