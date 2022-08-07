@@ -283,7 +283,7 @@ function M.show(bufnr)
   client.request(method, params, handler_with_range(range), bufnr)
 end
 
-local debounce_ms = 250
+local debounce_ms = 150
 _, M.show = utils.debounce(M.show, debounce_ms)
 
 return M
