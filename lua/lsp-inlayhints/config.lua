@@ -1,5 +1,10 @@
 local function setInlayHintHL()
-  local hl = vim.api.nvim_get_hl_by_name("Comment", true)
+  local has_hl, hl = pcall(vim.api.nvim_get_hl_by_name, "LspInlayHint", true)
+  if has_hl and (hl["foreground"] or hl["background"]) then
+    return
+  end
+
+  hl = vim.api.nvim_get_hl_by_name("Comment", true)
   local foreground = string.format("#%06x", hl["foreground"] or 0)
   if #foreground < 3 then
     foreground = ""
@@ -49,11 +54,13 @@ local default_config = {
 }
 
 config.load = function(user_config)
-  local has_hl, _ = pcall(vim.api.nvim_get_hl_by_name, "LspInlayHint", true)
-  if not has_hl then
-    setInlayHintHL()
-  end
+  vim.api.nvim_create_autocmd("ColorScheme", {
+    group = vim.api.nvim_create_augroup("_InlayHintsColorscheme", {}),
+    pattern = "*",
+    callback = setInlayHintHL,
+  })
 
+  setInlayHintHL()
   config.options = vim.tbl_deep_extend("force", default_config, user_config or {})
 end
 
