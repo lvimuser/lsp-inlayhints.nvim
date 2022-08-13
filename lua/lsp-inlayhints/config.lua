@@ -12,7 +12,7 @@ local function setInlayHintHL()
 
   hl = vim.api.nvim_get_hl_by_name("CursorLine", true)
   local background = string.format("#%06x", hl["background"] or 0)
-  if #foreground < 3 then
+  if #background < 3 then
     background = ""
   end
 

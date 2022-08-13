@@ -60,9 +60,9 @@ local fill_labels = function(line_hints)
       for _, label_part in ipairs(hint.label) do
         parts[#parts + 1] = label_part.value
       end
-      table.insert(tbl, table.concat(parts))
+      tbl[#tbl + 1] = table.concat(parts)
     else
-      table.insert(tbl, hint.label)
+      tbl[#tbl + 1] = hint.label
     end
   end
 
@@ -86,7 +86,7 @@ local function get_max_len(bufnr, parsed_data)
   return max_len
 end
 
-local render_hints = function(bufnr, parsed, namespace)
+local render_hints = function(bufnr, parsed, namespace, range)
   local max_len
   if config.options.inlay_hints.max_len_align then
     max_len = get_max_len(bufnr, parsed)
