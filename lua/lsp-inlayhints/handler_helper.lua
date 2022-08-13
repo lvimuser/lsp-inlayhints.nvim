@@ -9,14 +9,6 @@ local get_type_vt = function(current_line, labels, line_hints)
   local pattern = opts.type_hints.separator .. "%s?$"
   local t = {}
   for i, label in ipairs(labels) do
-    -- TODO need to pass range
-    -- if opts.show_variable_name and current_line then
-    --   local char_start = label.range.start.character
-    --   local char_end = label.range["end"].character
-    --   local variable_name = string.sub(current_line, char_start + 1, char_end)
-
-    --   virt_text = string.format("%s%s: %s", virt_text, variable_name, label)
-    -- else
     if opts.type_hints.remove_colon_start then
       -- remove ': ' or ':'
       label = label:match "^:?%s?(.*)$" or label
@@ -24,9 +16,7 @@ local get_type_vt = function(current_line, labels, line_hints)
     if opts.type_hints.remove_colon_end then
       label = label:match "(.*):$" or label
     end
-
-    label = label:gsub(pattern, "")
-    t[i] = label
+    t[i] = label:gsub(pattern, "")
   end
 
   return (opts.type_hints.prefix or "") .. table.concat(t, opts.type_hints.separator)

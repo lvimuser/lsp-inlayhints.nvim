@@ -39,7 +39,6 @@ local default_config = {
       separator = ", ",
       remove_colon_start = false,
       remove_colon_end = false,
-      -- show_variable_name = false, -- TODO
     },
     -- separator between types and parameter hints. Note that type hints are shown before parameter
     labels_separator = "  ",
