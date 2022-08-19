@@ -13,7 +13,7 @@ You can lazy load it on `module` or `LspAttach` event if you're calling it
 ### on_attach
 
 ```lua
-require("lsp-inlayhints").on_attach(bufnr, client)
+require("lsp-inlayhints").on_attach(client, bufnr)
 ```
 
 ### LspAttach
@@ -31,7 +31,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
     local bufnr = args.buf
     local client = vim.lsp.get_client_by_id(args.data.client_id)
-    require("lsp-inlayhints").on_attach(bufnr, client)
+    require("lsp-inlayhints").on_attach(client, bufnr)
   end,
 })
 ```

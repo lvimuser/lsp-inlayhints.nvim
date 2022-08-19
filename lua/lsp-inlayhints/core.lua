@@ -43,7 +43,7 @@ end
 ---@param bufnr number
 ---@param client table A |vim.lsp.client| object
 ---@param force boolean Whether to call the server regardless of capability
-function M.on_attach(bufnr, client, force)
+function M.on_attach(client, bufnr, force)
   if not client then
     vim.notify_once("[LSP Inlayhints] Tried to attach to a nil client.", vim.log.levels.ERROR)
     return
