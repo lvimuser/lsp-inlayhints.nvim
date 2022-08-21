@@ -18,7 +18,16 @@ vim.lsp.handlers["workspace/inlayHint/refresh"] = function(_, _, ctx)
   return vim.NIL
 end
 
-local function set_store(bufnr, client)
+local function set_store(client, bufnr)
+  -- TODO Remove
+   if type(bufnr) == "table" and type(client) == "number" then
+     vim.notify_once(
+       "[LSP Inlayhints] on_attach should be called with (client, bufnr)",
+       vim.log.levels.WARN
+     )
+
+     client, bufnr = bufnr, client
+   end
   if not store.b[bufnr].attached then
     vim.api.nvim_buf_attach(bufnr, false, {
       on_detach = function()
@@ -44,6 +53,15 @@ end
 ---@param client table A |vim.lsp.client| object
 ---@param force boolean Whether to call the server regardless of capability
 function M.on_attach(client, bufnr, force)
+  -- TODO Remove
+   if type(bufnr) == "table" and type(client) == "number" then
+     vim.notify_once(
+       "[LSP Inlayhints] on_attach should be called with (client, bufnr)",
+       vim.log.levels.WARN
+     )
+
+     client, bufnr = bufnr, client
+   end
   if not client then
     vim.notify_once("[LSP Inlayhints] Tried to attach to a nil client.", vim.log.levels.ERROR)
     return
@@ -65,7 +83,7 @@ function M.on_attach(client, bufnr, force)
     vim.notify_once("[LSP Inlayhints] attached to " .. client.name, vim.log.levels.TRACE)
   end
 
-  set_store(bufnr, client)
+  set_store(client, bufnr)
   M.setup_autocmd(bufnr)
 end
 
