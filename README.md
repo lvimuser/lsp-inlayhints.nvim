@@ -72,6 +72,7 @@ local default_config = {
       remove_colon_start = false,
       remove_colon_end = false,
     },
+    only_current_line = false,
     -- separator between types and parameter hints. Note that type hints are
     -- shown before parameter
     labels_separator = "  ",

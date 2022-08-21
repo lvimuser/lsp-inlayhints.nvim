@@ -90,6 +90,12 @@ local render_hints = function(bufnr, parsed, namespace)
     max_len = get_max_len(bufnr, parsed)
   end
 
+  if config.options.inlay_hints.only_current_line then
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local line = cursor[1] - 1
+    parsed = { [line] = parsed[line] }
+  end
+
   for line, line_hints in pairs(parsed) do
     local param_labels, type_labels = fill_labels(line_hints)
 
