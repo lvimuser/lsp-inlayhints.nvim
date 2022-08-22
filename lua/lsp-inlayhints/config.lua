@@ -50,6 +50,7 @@ local default_config = {
     -- highlight group
     highlight = "LspInlayHint",
   },
+  enabled_at_startup = true,
   debug_mode = false,
 }
 

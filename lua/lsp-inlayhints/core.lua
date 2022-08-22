@@ -6,7 +6,7 @@ local store = require("lsp-inlayhints.store")._store
 
 local AUGROUP = "_InlayHints"
 local ns = vim.api.nvim_create_namespace "textDocument/inlayHints"
-local enabled = true
+local enabled
 
 -- TODO Set client capability
 vim.lsp.handlers["workspace/inlayHint/refresh"] = function(_, _, ctx)
@@ -60,6 +60,8 @@ function M.on_attach(bufnr, client, force)
   then
     return
   end
+
+  enabled = config.options.enabled_at_startup
 
   if config.options.debug_mode then
     vim.notify_once("[LSP Inlayhints] attached to " .. client.name, vim.log.levels.TRACE)
