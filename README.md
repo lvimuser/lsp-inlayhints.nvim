@@ -96,7 +96,17 @@ Should work for **all** languages that implement the spec. Tested on `rust-analy
 
 ### Rust
 
-If you're using `rust-tools.nvim`, set `autoSetHints = false`.
+If you're using `rust-tools.nvim`, set `inlay_hints.auto` to false:
+        
+```lua
+require("rust-tools").setup({
+    tools = {
+        inlay_hints = {
+            auto = false
+        }
+    }
+})
+```
 
 ### Typescript
 
