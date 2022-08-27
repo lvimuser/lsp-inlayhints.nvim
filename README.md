@@ -96,8 +96,10 @@ Should work for **all** languages that implement the spec. Tested on `rust-analy
 
 ### Rust
 
-If you're using `rust-tools.nvim`, set `inlay_hints.auto` to false:
-        
+<summary>If you're using `rust-tools.nvim`, set `inlay_hints.auto` to false.</summary>
+
+<details>
+
 ```lua
 require("rust-tools").setup({
     tools = {
@@ -107,6 +109,8 @@ require("rust-tools").setup({
     }
 })
 ```
+
+</details>
 
 ### Typescript
 
