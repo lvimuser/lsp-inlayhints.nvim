@@ -96,7 +96,7 @@ Should work for **all** languages that implement the spec. Tested on `rust-analy
 
 ### Rust
 
-<summary>If you're using `rust-tools.nvim`, set `inlay_hints.auto` to false.</summary>
+If you're using `rust-tools.nvim`, set `inlay_hints.auto` to false.
 
 <details>
 
@@ -116,7 +116,7 @@ require("rust-tools").setup({
 
 While `tsserver` doesn't (strictly) implement the spec, there's a built-in workaround for it.
 
-See <https://github.com/typescript-language-server/typescript-language-server#workspacedidchangeconfiguration> for the options.
+See [typescript-language-server#workspacedidchangeconfiguration](https://github.com/typescript-language-server/typescript-language-server#workspacedidchangeconfiguration).
 
 <details><summary>Example configuration to enable inlay hints in TypeScript and JavaScript, using lspconfig:</summary>
 
@@ -149,17 +149,21 @@ lspconfig.tsserver.setup({
 })
 ```
 
+You might want to set `VariableTypeHints` to `false` if it's too noisy.
+
 </details>
 
 ### Clangd
 
-Builtin support. See <https://clangd.llvm.org/extensions#inlay-hints> and
-<https://clangd.llvm.org/config#inlayhints>.
+See <https://clangd.llvm.org/extensions#inlay-hints> and <https://clangd.llvm.org/config#inlayhints>.
 If using `p00f/clangd_extensions.nvim`, set `autoSetHints = false`.
 
 ### Golang
 
-Implements the spec. Configuration: <https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md>. Example:
+See <https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md>. If you're using `ray-x/go.nvim`, set `lsp_inlay_hints = { enable = false }`.
+
+<details>
+<summary>Example</summary>
 
 ```json
 "gopls": {
@@ -174,11 +178,11 @@ Implements the spec. Configuration: <https://github.com/golang/tools/blob/master
 }
 ```
 
-If you're using `ray-x/go.nvim`, set `lsp_inlay_hints = { enable = false }`.
+</details>
 
 ### Java (jdtls)
 
-Available settings: https://github.com/redhat-developer/vscode-java/blob/master/package.json#L868-L892.
+Available settings: https://github.com/redhat-developer/vscode-java/blob/master/package.json#L892-L916.
 
 - Server doesn't set `inlayHintProvider` [capability](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#serverCapabilities).
 - Server doesn't specify [InlayHintKind](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintKind) and its options refer only to parameters.
