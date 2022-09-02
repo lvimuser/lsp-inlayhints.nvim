@@ -92,7 +92,7 @@ local default_config = {
 
 ## Languages
 
-Should work for **all** languages that implement the spec. Tested on `rust-analyzer (via rust-tools.nvim)`, `fsautocomplete (via ionide.vim)`, `sumneko_lua`, `gopls`.
+Should work for **all** languages that implement the spec. Tested on `rust-analyzer (via rust-tools.nvim)`, `fsautocomplete (via ionide.vim)`, `sumneko_lua`, `gopls`, `tsserver`.
 
 ### Rust
 
@@ -114,7 +114,8 @@ require("rust-tools").setup({
 
 ### Typescript
 
-While `tsserver` doesn't (strictly) implement the spec, there's a built-in workaround for it.
+`tsserver` is spec compliant from [v1.1.0](https://github.com/typescript-language-server/typescript-language-server/releases/tag/v1.1.0) onwards. If you're using an older version, add
+`require("lsp-inlayhints").adapter.set_old_tsserver()`.
 
 See [typescript-language-server#workspacedidchangeconfiguration](https://github.com/typescript-language-server/typescript-language-server#workspacedidchangeconfiguration).
 

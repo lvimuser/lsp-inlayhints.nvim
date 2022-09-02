@@ -10,17 +10,6 @@ M.servers_config = {
   clangd = {
     method = "clangd/inlayHints",
   },
-  tsserver = {
-    method = "typescript/inlayHints",
-    result_adapter = function(result)
-      return result.inlayHints or result
-    end,
-    hint_adapter = function(h)
-      if h.text then
-        h.label = h.text
-      end
-    end,
-  },
   jdtls = {
     hint_adapter = function(h)
       -- server doesn't specify 'InlayHintKind' and its settings pertain only to parameters.
@@ -30,6 +19,20 @@ M.servers_config = {
     end,
   },
 }
+
+function M.set_old_tsserver()
+  M.servers_config["tsserver"] = {
+    method = "typescript/inlayHints",
+    result_adapter = function(result)
+      return result.inlayHints or result
+    end,
+    hint_adapter = function(h)
+      if h.text then
+        h.label = h.text
+      end
+    end,
+  }
+end
 
 local generic_hint_adapter = function(hint)
   -- offspec
