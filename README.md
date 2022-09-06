@@ -115,7 +115,7 @@ require("rust-tools").setup({
 ### Typescript
 
 `tsserver` is spec compliant from [v1.1.0](https://github.com/typescript-language-server/typescript-language-server/releases/tag/v1.1.0) onwards. If you're using an older version, add
-`require("lsp-inlayhints").adapter.set_old_tsserver()`.
+`require("lsp-inlayhints.adapter").set_old_tsserver()`.
 
 See [typescript-language-server#workspacedidchangeconfiguration](https://github.com/typescript-language-server/typescript-language-server#workspacedidchangeconfiguration).
 
