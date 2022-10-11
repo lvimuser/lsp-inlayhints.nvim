@@ -61,7 +61,6 @@ function M.on_attach(client, bufnr, force)
   if
     not (
       client.server_capabilities.inlayHintProvider
-      or client.server_capabilities.clangdInlayHintsProvider
       or client.name == "tsserver"
       or client.name == "jdtls"
       or force

@@ -156,6 +156,8 @@ You might want to set `VariableTypeHints` to `false` if it's too noisy.
 
 ### Clangd
 
+If you're on a version earlier than 15.0.0, you must use an older commit.
+
 See <https://clangd.llvm.org/extensions#inlay-hints> and <https://clangd.llvm.org/config#inlayhints>.
 If using `p00f/clangd_extensions.nvim`, set `autoSetHints = false`.
 

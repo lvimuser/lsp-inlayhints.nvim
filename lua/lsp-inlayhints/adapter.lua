@@ -7,9 +7,6 @@ M.servers_config = {
   default = {
     method = "textDocument/inlayHint",
   },
-  clangd = {
-    method = "clangd/inlayHints",
-  },
   jdtls = {
     hint_adapter = function(h)
       -- server doesn't specify 'InlayHintKind' and its settings pertain only to parameters.
