@@ -124,6 +124,7 @@ local render_hints = function(bufnr, parsed, namespace)
       vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
         virt_text = { { virt_text, config.options.inlay_hints.highlight } },
         hl_mode = "combine",
+        priority = config.options.inlay_hints.priority,
       })
     end
   end
