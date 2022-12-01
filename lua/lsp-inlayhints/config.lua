@@ -49,6 +49,8 @@ local default_config = {
     max_len_align_padding = 1,
     -- highlight group
     highlight = "LspInlayHint",
+    -- virt_text priority
+    priority = 0,
   },
   enabled_at_startup = true,
   debug_mode = false,
