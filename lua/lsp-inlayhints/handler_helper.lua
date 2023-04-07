@@ -115,16 +115,20 @@ local render_hints = function(bufnr, parsed, namespace, range)
       virt_text = param_vt
     end
 
+    local padding = ""
     if opts.max_len_align then
-      virt_text = string.rep(
+      padding = string.rep(
         " ",
         max_len - current_line(bufnr, line):len() + opts.max_len_align_padding
-      ) .. virt_text
+      )
     end
 
     if virt_text ~= "" then
       vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
-        virt_text = { { virt_text, opts.highlight } },
+        virt_text = {
+          opts.max_len_align and { padding, "NONE" },
+          { virt_text, opts.highlight },
+        },
         hl_mode = "combine",
         priority = opts.priority,
       })
