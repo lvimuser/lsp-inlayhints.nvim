@@ -126,7 +126,7 @@ local render_hints = function(bufnr, parsed, namespace, range)
     if virt_text ~= "" then
       vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
         virt_text = {
-          opts.max_len_align and { padding, "NONE" },
+          { padding, "NONE" },
           { virt_text, opts.highlight },
         },
         hl_mode = "combine",
