@@ -88,11 +88,11 @@ end
 
 local render_hints = function(bufnr, parsed, namespace, range)
   local max_len
-  if config.options.inlay_hints.max_len_align then
+  if opts.max_len_align then
     max_len = get_max_len(bufnr, parsed)
   end
 
-  if config.options.inlay_hints.only_current_line then
+  if opts.only_current_line then
     local cursor = vim.api.nvim_win_get_cursor(0)
     local line = cursor[1] - 1
     parsed = { [line] = parsed[line] }
@@ -115,18 +115,18 @@ local render_hints = function(bufnr, parsed, namespace, range)
       virt_text = param_vt
     end
 
-    if config.options.inlay_hints.max_len_align then
+    if opts.max_len_align then
       virt_text = string.rep(
         " ",
-        max_len - current_line(bufnr, line):len() + config.options.inlay_hints.max_len_align_padding
+        max_len - current_line(bufnr, line):len() + opts.max_len_align_padding
       ) .. virt_text
     end
 
     if virt_text ~= "" then
       vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
-        virt_text = { { virt_text, config.options.inlay_hints.highlight } },
+        virt_text = { { virt_text, opts.highlight } },
         hl_mode = "combine",
-        priority = config.options.inlay_hints.priority,
+        priority = opts.priority,
       })
     end
   end
