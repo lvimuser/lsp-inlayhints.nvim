@@ -114,7 +114,7 @@ require("rust-tools").setup({
 
 </details>
 
-### Typescript
+### TypeScript
 
 `tsserver` is spec compliant from [v1.1.0](https://github.com/typescript-language-server/typescript-language-server/releases/tag/v1.1.0) onwards. If you're using an older version, add
 `require("lsp-inlayhints.adapter").set_old_tsserver()`.
@@ -132,6 +132,7 @@ lspconfig.tsserver.setup({
         includeInlayParameterNameHintsWhenArgumentMatchesName = false,
         includeInlayFunctionParameterTypeHints = true,
         includeInlayVariableTypeHints = true,
+        includeInlayVariableTypeHintsWhenTypeMatchesName = false,
         includeInlayPropertyDeclarationTypeHints = true,
         includeInlayFunctionLikeReturnTypeHints = true,
         includeInlayEnumMemberValueHints = true,
@@ -143,6 +144,7 @@ lspconfig.tsserver.setup({
         includeInlayParameterNameHintsWhenArgumentMatchesName = false,
         includeInlayFunctionParameterTypeHints = true,
         includeInlayVariableTypeHints = true,
+        includeInlayVariableTypeHintsWhenTypeMatchesName = false,
         includeInlayPropertyDeclarationTypeHints = true,
         includeInlayFunctionLikeReturnTypeHints = true,
         includeInlayEnumMemberValueHints = true,
