@@ -87,9 +87,11 @@ local function get_max_len(bufnr, parsed_data)
 end
 
 local render_hints = function(bufnr, parsed, namespace, range)
-  local max_len
-  if opts.max_len_align then
-    max_len = get_max_len(bufnr, parsed)
+  local virt_text_win_col = 0
+  if opts.position.align == "max_len" then
+    virt_text_win_col = opts.position.padding + get_max_len(bufnr, parsed)
+  elseif opts.position.align == "fixed_col" then
+    virt_text_win_col = opts.position.padding
   end
 
   if opts.only_current_line then
@@ -115,20 +117,12 @@ local render_hints = function(bufnr, parsed, namespace, range)
       virt_text = param_vt
     end
 
-    local padding = ""
-    if opts.max_len_align then
-      padding = string.rep(
-        " ",
-        max_len - current_line(bufnr, line):len() + opts.max_len_align_padding
-      )
-    end
-
     if virt_text ~= "" then
       vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
         virt_text = {
-          { padding, "NONE" },
           { virt_text, opts.highlight },
         },
+        virt_text_win_col = virt_text_win_col,
         hl_mode = "combine",
         priority = opts.priority,
       })
