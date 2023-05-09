@@ -78,14 +78,9 @@ M.method = function(bufnr)
 end
 
 -- Adapt responses to the spec interface
-function M.adapt(result, ctx)
-  local client = vim.lsp.get_client_by_id(ctx.client_id)
-  if not client then
-    return {}
-  end
-
-  result = result_adapter(client.name, result) or {}
-  return utils.tbl_map(hint_adapter(client.name), result)
+function M.adapt(result, client_name)
+  result = result_adapter(client_name, result) or {}
+  return utils.tbl_map(hint_adapter(client_name), result)
 end
 
 return M

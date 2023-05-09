@@ -209,61 +209,37 @@ local function get_params(range, bufnr)
   return make_params(range.start, range._end, bufnr)
 end
 
-local function parseHints(result, ctx)
-  if type(result) ~= "table" then
-    return {}
-  end
-
-  result = adapter.adapt(result, ctx)
-
-  local map = {}
-  for _, inlayHint in pairs(result) do
-    local line = tonumber(inlayHint.position.line)
-    if not map[line] then
-      ---@diagnostic disable-next-line: need-check-nil
-      map[line] = {}
-    end
-
-    map[line][#map[line] + 1] = {
-      label = inlayHint.label,
-      kind = inlayHint.kind or 1,
-      position = inlayHint.position,
-    }
-
-    table.sort(map[line], function(a, b)
-      return a.position.character < b.position.character
-    end)
-  end
-
-  return map
-end
-
 local function on_refresh(err, result, ctx, range)
+  local bufnr = ctx.bufnr
   if err then
-    M.clear(ctx.bufnr, range.start[1] - 1, range._end[1])
+    M.clear(bufnr, range.start[1] - 1, range._end[1])
 
     if config.options.debug_mode then
       local msg = err.message or vim.inspect(err)
       vim.notify_once("[inlay_hints] LSP error:" .. msg, vim.log.levels.ERROR)
-      return
     end
+    return
   end
 
-  local bufnr = ctx.bufnr
-  local parsed = parseHints(result, ctx)
+  local client = vim.lsp.get_client_by_id(ctx.client_id)
+  if not client then
+    return
+  end
+
+  local hints = adapter.adapt(result, client.name)
 
   -- range given is 1-indexed, but clear is 0-indexed (end is exclusive).
   M.clear(bufnr, range.start[1] - 1, range._end[1])
 
   local helper = require "lsp-inlayhints.handler_helper"
-  helper.render_hints(bufnr, parsed, ns, range)
+  helper.render_hints(bufnr, ns, hints, range, client.name)
 end
 
 function M.toggle()
   if enabled then
     M.clear()
   else
-    M.show()
+    M.show(nil, nil, true)
   end
 
   enabled = not enabled
@@ -289,6 +265,7 @@ local cts = utils.cancellationTokenSource:new()
 -- Sends the request to get the inlay hints and show them
 ---@param bufnr number | nil
 ---@param delay integer | nil additional delay in ms.
+---@param full boolean | nil
 function M.show(bufnr, delay, full)
   -- TODO
   -- a change somewhere in the buffer might cause other hints to change, we should
