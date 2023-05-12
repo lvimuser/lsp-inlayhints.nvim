@@ -82,9 +82,9 @@ local default_config = {
       end
 
       local vt = {}
-      vt[#vt + 1] = hint.paddingLeft and { " ", "Normal" } or nil
+      vt[#vt + 1] = hint.paddingLeft and { " ", "None" } or nil
       vt[#vt + 1] = { label, opts.highlight }
-      vt[#vt + 1] = hint.paddingRight and { " ", "Normal" } or nil
+      vt[#vt + 1] = hint.paddingRight and { " ", "None" } or nil
 
       return vt
     end,
