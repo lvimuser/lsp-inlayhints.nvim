@@ -23,7 +23,7 @@ local function may_render(label, line, col, range)
   if not label or label == "" then
     return false
   end
-  return line >= range.start[1] and line <= range._end[1]
+  return line >= range.start[1] - 1 and line <= range._end[1]
 end
 
 local M = {}
