@@ -51,6 +51,7 @@ M.render_hints = function(bufnr, ns, hints, range, client_name)
           virt_text_pos = "inline",
           strict = false,
           priority = opts.priority,
+          right_gravity = hint.kind == 2 and false,
         })
       end)
     end
