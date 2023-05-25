@@ -126,25 +126,21 @@ function M.setup_autocmd(bufnr)
     end,
   })
 
-  if vim.fn.has "nvim-0.8" > 0 then
-    local group = vim.api.nvim_create_augroup(AUGROUP .. "Detach", { clear = false })
-    -- Needs nightly!
-    -- https://github.com/neovim/neovim/commit/2ffafc7aa91fb1d9a71fff12051e40961a7b7f69
-    vim.api.nvim_create_autocmd("LspDetach", {
-      group = group,
-      buffer = bufnr,
-      once = true,
-      callback = function(args)
-        if not store.b[bufnr] or args.data.client_id ~= store.b[bufnr].client_id then
-          return
-        end
-        for _, v in pairs { aucmd } do
-          pcall(vim.api.nvim_del_autocmd, v)
-        end
-        store.b[bufnr].attached = false
-      end,
-    })
-  end
+  local group = vim.api.nvim_create_augroup(AUGROUP .. "Detach", { clear = false })
+  vim.api.nvim_create_autocmd("LspDetach", {
+    group = group,
+    buffer = bufnr,
+    once = true,
+    callback = function(args)
+      if not store.b[bufnr] or args.data.client_id ~= store.b[bufnr].client_id then
+        return
+      end
+      for _, v in pairs { aucmd } do
+        pcall(vim.api.nvim_del_autocmd, v)
+      end
+      store.b[bufnr].attached = false
+    end,
+  })
 end
 
 --- Return visible lines of the buffer (1-based indexing)
