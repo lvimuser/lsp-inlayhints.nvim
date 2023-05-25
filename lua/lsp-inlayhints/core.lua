@@ -50,7 +50,6 @@ local function set_store(client, bufnr)
   store.b[bufnr].client = { name = client.name, id = client.id }
   store.b[bufnr].attached = true
 
-  -- give it some time for the server to start;
   first_request(bufnr)
 
   set_debounced_fn()
@@ -263,9 +262,9 @@ local scheduler = require("lsp-inlayhints.utils").scheduler:new()
 local cts = utils.cancellationTokenSource:new()
 
 -- Sends the request to get the inlay hints and show them
----@param bufnr number | nil
----@param delay integer | nil additional delay in ms.
----@param full boolean | nil
+---@param bufnr? number
+---@param delay? integer additional delay in ms.
+---@param full? boolean
 function M.show(bufnr, delay, full)
   -- TODO
   -- a change somewhere in the buffer might cause other hints to change, we should
@@ -315,16 +314,16 @@ function M.show(bufnr, delay, full)
 
     local t1 = uv.now()
     local success, id = client.request(adapter.method(bufnr), params, function(err, result, ctx)
-      if store.b[bufnr].first_request then
+      if token.isCancellationRequested then
+        return
+      end
+
+      if store.b[bufnr].first_request and not err then
         store.b[bufnr].first_request = false
         info.update(bufnr, 200)
       else
         uv.update_time()
         info.update(bufnr, (uv.now() - t1))
-      end
-
-      if token.isCancellationRequested then
-        return
       end
 
       if config.options.debug_mode then
