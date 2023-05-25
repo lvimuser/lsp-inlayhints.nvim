@@ -74,7 +74,7 @@ end
 --- Setup inlayHints
 ---@param bufnr number
 ---@param client table A |vim.lsp.client| object
----@param force boolean Whether to call the server regardless of capability
+---@param force? boolean Whether to call the server regardless of capability
 function M.on_attach(client, bufnr, force)
   -- TODO Remove
   if type(bufnr) == "table" and type(client) == "number" then
