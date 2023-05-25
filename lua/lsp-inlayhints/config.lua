@@ -41,7 +41,7 @@ local default_config = {
       return table.concat(tbl, ", ")
     end,
     virt_text_formatter = function(label, hint, opts, client_name)
-      if client_name == "sumneko_lua" then
+      if client_name == "sumneko_lua" or client_name == "lua_ls" then
         if hint.kind == 2 then
           hint.paddingLeft = false
         else
