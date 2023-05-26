@@ -52,6 +52,8 @@ M.render_hints = function(bufnr, ns, hints, range, client_name)
           strict = false,
           priority = opts.priority,
           right_gravity = hint.kind == 2 and false,
+          virt_text_hide = true,
+          hl_mode = "combine",
         })
       end)
     end
