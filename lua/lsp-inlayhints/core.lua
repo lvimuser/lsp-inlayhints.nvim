@@ -232,12 +232,12 @@ end
 
 function M.toggle()
   if enabled then
+    enabled = false
     M.clear()
   else
+    enabled = true
     M.show(nil, nil, true)
   end
-
-  enabled = not enabled
 end
 
 --- Clear all hints in the specified buffer
@@ -299,7 +299,7 @@ function M.show(bufnr, delay, full)
       return
     end
 
-    local range = get_hint_ranges(client.offset_encoding, store.b[bufnr].first_request)
+    local range = get_hint_ranges(client.offset_encoding, store.b[bufnr].first_request or full)
     local params = get_params(range, bufnr)
     if not params then
       return
