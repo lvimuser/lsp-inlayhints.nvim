@@ -9,6 +9,11 @@ local AUGROUP = "_InlayHints"
 local ns = vim.api.nvim_create_namespace "textDocument/inlayHints"
 local enabled
 
+local _, debounced_fn = utils.debounce(function(bufnr, mode)
+  local delay = mode ~= "n" and 1250 or nil
+  M.show(bufnr, delay)
+end, 50)
+
 -- TODO Set client capability
 vim.lsp.handlers["workspace/inlayHint/refresh"] = function(_, _, ctx)
   local buffers = vim.lsp.get_buffers_by_client_id(ctx.client_id)
@@ -19,20 +24,6 @@ vim.lsp.handlers["workspace/inlayHint/refresh"] = function(_, _, ctx)
   -- For each visible win/bufnr, call show().
 
   return vim.NIL
-end
-
-local debounced_fn
-local function set_debounced_fn()
-  if debounced_fn then
-    return debounced_fn
-  end
-
-  local _, fn = utils.debounce(function(bufnr, mode)
-    local delay = mode ~= "n" and 1250 or nil
-    M.show(bufnr, delay)
-  end, 50)
-
-  debounced_fn = fn
 end
 
 local function first_request(bufnr, delay)
@@ -51,8 +42,6 @@ local function set_store(client, bufnr)
   store.b[bufnr].attached = true
 
   first_request(bufnr)
-
-  set_debounced_fn()
 
   vim.api.nvim_buf_attach(bufnr, false, {
     on_detach = function()
@@ -242,9 +231,9 @@ end
 
 --- Clear all hints in the specified buffer
 --- Lines are 0-indexed.
----@param bufnr integer | nil, defaults to current buffer
----@param line_start integer | nil, defaults to 0 (start of buffer)
----@param line_end integer | nil, defaults to -1 (end of buffer)
+---@param bufnr integer?, defaults to current buffer
+---@param line_start integer?, defaults to 0 (start of buffer)
+---@param line_end integer?, defaults to -1 (end of buffer)
 function M.clear(bufnr, line_start, line_end)
   if bufnr == nil or bufnr == 0 then
     bufnr = vim.api.nvim_get_current_buf()
