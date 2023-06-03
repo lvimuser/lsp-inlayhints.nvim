@@ -86,12 +86,9 @@ local function get_max_len(bufnr, parsed_data)
   return max_len
 end
 
-local render_hints = function(bufnr, parsed, namespace, range)
-  local max_len
-  if opts.max_len_align then
-    max_len = get_max_len(bufnr, parsed)
-  end
+local M = {}
 
+M.render_hints = function(bufnr, parsed, namespace)
   if opts.only_current_line then
     local cursor = vim.api.nvim_win_get_cursor(0)
     local line = cursor[1] - 1
@@ -99,36 +96,14 @@ local render_hints = function(bufnr, parsed, namespace, range)
   end
 
   for line, line_hints in pairs(parsed) do
-    local param_labels, type_labels = fill_labels(line_hints)
+    local param_labels, _ = fill_labels(line_hints)
 
-    local param_vt = get_param_vt(param_labels)
-    local type_vt = get_type_vt(nil, type_labels)
-
-    local virt_text
-    if type_vt ~= "" then
-      if param_vt ~= "" then
-        virt_text = type_vt .. opts.labels_separator .. param_vt
-      else
-        virt_text = type_vt
-      end
-    else
-      virt_text = param_vt
-    end
-
-    local padding = ""
-    if opts.max_len_align then
-      padding = string.rep(
-        " ",
-        max_len - current_line(bufnr, line):len() + opts.max_len_align_padding
-      )
-    end
-
-    if virt_text ~= "" then
-      vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
+    for i, hint in pairs(line_hints) do
+      vim.api.nvim_buf_set_extmark(bufnr, namespace, line, hint.position.character, {
         virt_text = {
-          { padding, "NONE" },
-          { virt_text, opts.highlight },
+          { param_labels[i] .. " ", opts.highlight },
         },
+        virt_text_pos = "inline",
         hl_mode = "combine",
         priority = opts.priority,
       })
@@ -136,6 +111,4 @@ local render_hints = function(bufnr, parsed, namespace, range)
   end
 end
 
-return {
-  render_hints = render_hints,
-}
+return M

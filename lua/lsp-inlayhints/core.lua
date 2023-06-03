@@ -256,7 +256,7 @@ local function on_refresh(err, result, ctx, range)
   M.clear(bufnr, range.start[1] - 1, range._end[1])
 
   local helper = require "lsp-inlayhints.handler_helper"
-  helper.render_hints(bufnr, parsed, ns, range)
+  helper.render_hints(bufnr, parsed, ns)
 end
 
 function M.toggle()
