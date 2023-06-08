@@ -261,12 +261,12 @@ end
 
 function M.toggle()
   if enabled then
+    enabled = false
     M.clear()
   else
+    enabled = true
     M.show()
   end
-
-  enabled = not enabled
 end
 
 --- Clear all hints in the specified buffer
