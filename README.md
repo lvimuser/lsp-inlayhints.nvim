@@ -64,22 +64,26 @@ local default_config = {
       remove_colon_start = false,
       remove_colon_end = true,
     },
+    -- type and other hints
     type_hints = {
-      -- type and other hints
       show = true,
       prefix = "",
       separator = ", ",
       remove_colon_start = false,
       remove_colon_end = false,
     },
+    position = {
+      -- where to show the hints. values can be:
+      --   nil: show hints after the end of the line
+      --   "max_len": show hints after the longest line in the file
+      --   "fixed_col": show hints after a fixed column, specified in padding
+      align = nil,
+      -- extra padding on the left if align is not nil
+      padding = 1,
+    },
     only_current_line = false,
-    -- separator between types and parameter hints. Note that type hints are
-    -- shown before parameter
+    -- separator between types and parameter hints. Note that type hints are shown before parameter
     labels_separator = "  ",
-    -- whether to align to the length of the longest line in the file
-    max_len_align = false,
-    -- padding from the left if max_len_align is true
-    max_len_align_padding = 1,
     -- highlight group
     highlight = "LspInlayHint",
     -- virt_text priority
